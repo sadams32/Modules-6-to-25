@@ -5,3 +5,5 @@ editor: visual
 ---
 
 ## Module 6
+
+Enter module info here
