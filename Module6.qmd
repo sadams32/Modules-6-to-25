@@ -4,8 +4,88 @@ format: html
 editor: visual
 ---
 
-## Module 6
+### Module 6
 
-Enter module info here
+```{r} 
+library(tidyverse)
+```
 
-change
+### Challenge 1
+
+# Load the Country-Data-2016 into a data frame varaible, d, and summarize the variables in that data frame. You can load the .csv file with a link or from local file so I'm going to try both.
+
+# Load with link/curl
+```{r}
+library(curl)
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/Country-Data-2016.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+## OR
+# Load from local file
+```{r}
+f <- "~/Desktop/Country-Data-2016.csv"
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+```{r}
+summary(d)
+```
+
+```{r}
+names(d)
+```
+
+# Create a new pop_density variable in your data frame which is population / area. What are the 10 most dense countries? The 10 least dense?
+
+# Most
+```{r}
+d$pop_density <- d$population/d$area
+d <- d[order(-d$pop_density), ]
+d[1:10, ]
+```
+
+# Least
+```{r}
+d <- d[order(d$pop_density), ]
+d[1:10, ]
+```
+
+# Extract data from the 20 largest countries into a new variable (I believe a new varaible refers to a new dataframe (NOT d)). What are the median area and population size of these countries?
+```{r}
+big_20 <- d[order(-d$area), ] [1:20,]
+summary(big_20)
+```
+
+## OR
+```{r}
+mean(new$population, na.rm = TRUE)
+mean(new$area, na.rm = TRUE)
+```
+
+# Extract data from all countries beginning with the letters “A” through “F”. What are the mean area and population size of these countries?
+# grep looks for A-F anywhere in the name of the country
+```{r}
+a_to_f <- d[grep("[A-F]", d$country), ]
+summary(a_to_f)
+```
+
+### Challenge 2
+
+```{r}
+par(mfrow = c(2, 3))
+boxplot(d$population)
+boxplot(log(d$population))
+boxplot(d$area)
+boxplot(log(d$area))
+barplot(d$population)
+barplot(d$area)
+```
+
+### Challenge 3
+
+
+
+
