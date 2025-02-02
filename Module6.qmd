@@ -4,17 +4,18 @@ format: html
 editor: visual
 ---
 
-### Module 6
+# Module 6
 
-```{r} 
+```{r}
 library(tidyverse)
 ```
 
-### Challenge 1
+# Challenge 1
 
-# Load the Country-Data-2016 into a data frame varaible, d, and summarize the variables in that data frame. You can load the .csv file with a link or from local file so I'm going to try both.
+Load the Country-Data-2016 into a data frame varaible, d, and summarize the variables in that data frame. You can load the .csv file with a link or from local file so I'm going to try both.
 
-# Load with link/curl
+Load with link/curl
+
 ```{r}
 library(curl)
 f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/Country-Data-2016.csv")
@@ -23,7 +24,9 @@ head(d)
 ```
 
 ## OR
-# Load from local file
+
+Load from local file
+
 ```{r}
 f <- "~/Desktop/Country-Data-2016.csv"
 d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
@@ -38,41 +41,47 @@ summary(d)
 names(d)
 ```
 
-# Create a new pop_density variable in your data frame which is population / area. What are the 10 most dense countries? The 10 least dense?
+Create a new pop_density variable in your data frame which is population / area. What are the 10 most dense countries? The 10 least dense?
 
-# Most
+Most
+
 ```{r}
 d$pop_density <- d$population/d$area
 d <- d[order(-d$pop_density), ]
 d[1:10, ]
 ```
 
-# Least
+Least
+
 ```{r}
 d <- d[order(d$pop_density), ]
 d[1:10, ]
 ```
 
-# Extract data from the 20 largest countries into a new variable (I believe a new varaible refers to a new dataframe (NOT d)). What are the median area and population size of these countries?
+Extract data from the 20 largest countries into a new variable (I believe a new varaible refers to a new dataframe (NOT d)). What are the median area and population size of these countries?
+
 ```{r}
 big_20 <- d[order(-d$area), ] [1:20,]
 summary(big_20)
 ```
 
 ## OR
+
 ```{r}
 mean(new$population, na.rm = TRUE)
 mean(new$area, na.rm = TRUE)
 ```
 
-# Extract data from all countries beginning with the letters “A” through “F”. What are the mean area and population size of these countries?
-# grep looks for A-F anywhere in the name of the country
+Extract data from all countries beginning with the letters “A” through “F”. What are the mean area and population size of these countries?
+
+grep looks for A-F anywhere in the name of the country
+
 ```{r}
 a_to_f <- d[grep("[A-F]", d$country), ]
 summary(a_to_f)
 ```
 
-### Challenge 2
+# Challenge 2
 
 ```{r}
 par(mfrow = c(2, 3))
@@ -84,10 +93,11 @@ barplot(d$population)
 barplot(d$area)
 ```
 
-### Challenge 3
+# Challenge 3
 
-# Make histograms of the log() transformed population and area data from the Country-Data-2016 file. Explore what happens if you set freq=FALSE versus the default of freq=TRUE. Try looking at other variables as well.
-# Setting the argument freq=FALSE will scale the Y axis to represent the proportion of observations falling into each bin rather than the count.
+Make histograms of the log() transformed population and area data from the Country-Data-2016 file. Explore what happens if you set freq=FALSE versus the default of freq=TRUE. Try looking at other variables as well.
+
+Setting the argument freq=FALSE will scale the Y axis to represent the proportion of observations falling into each bin rather than the count.
 
 ```{r}
 par(mfrow = c(1, 2))  # gives us two panels
@@ -98,9 +108,10 @@ hist(log(area), freq = FALSE, col = "red", main = "Plot 2", xlab = "log(area)",
     ylab = "density", ylim = c(0, 0.2))
 ```
 
-# NOTE: You can add a line to your histograms (e.g., to show the mean value for a variable) using the abline() command, with arguments. For exmaple, to show a single vertical line representing the mean log(population size), you would add the argument v=mean(log(population)))
+NOTE: You can add a line to your histograms (e.g., to show the mean value for a variable) using the abline() command, with arguments. For exmaple, to show a single vertical line representing the mean log(population size), you would add the argument v=mean(log(population)))
 
-# Density plot : The density() function computes a non-parametric estimate of the distribution of a variable, which can be combined with plot() to also yield a graphical view of the distribution of the data. If your data have missing values, then you need to add the argument na.rm=TRUE to the density() function. To superimpose a density() curve on a histogram, you can use the lines(density()) function.
+Density plot : The density() function computes a non-parametric estimate of the distribution of a variable, which can be combined with plot() to also yield a graphical view of the distribution of the data. If your data have missing values, then you need to add the argument na.rm=TRUE to the density() function. To superimpose a density() curve on a histogram, you can use the lines(density()) function.
+
 ```{r}
 par(mfrow = c(1, 1))  # set up one panel and redraw the log(population) histogram
 hist(log(population), freq = FALSE, col = "white", main = "My Plot with Mean and Density",
@@ -113,11 +124,51 @@ lines(density(log(population), na.rm = TRUE), col = "green")
 detach(d)
 ```
 
-# Tables: the table() function can be used to summarize counts and proportions for categorical variables in your dataset.
-# Using the table() function, find what is the most common form of government in the Country-Data-2016 dataset. How many countries have that form? HINT: We can combine table() with sort() and the argument decreasing=TRUE to get the desired answered straight away:
+Tables: the table() function can be used to summarize counts and proportions for categorical variables in your dataset.
+
+Using the table() function, find what is the most common form of government in the Country-Data-2016 dataset. How many countries have that form? HINT: We can combine table() with sort() and the argument decreasing=TRUE to get the desired answered straight away:
+
 ```{r}
 sort(table(d$govt_form), decreasing = TRUE)
 ```
 
-### Challenge 5
+# Challenge 5
 
+Load KamilarAndCooper data
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
+d <- read.csv(f, header = TRUE, stringsAsFactors = FALSE)
+attach(d) # attaching means you won't have to use $ symbol?
+head(d)
+summary(d)
+```
+
+Make boxplot
+
+```{r}
+boxplot(log(Body_mass_female_mean) ~ Family, d) # ~Family means to group by family
+```
+
+Don't forget to detach!
+
+```{r}
+detach(d)
+```
+
+## Alternative: use ggplot2 (could be done as 1 line but shown as multiple for readability)
+
+```{r}
+library(ggplot2)
+p <- ggplot(data = d, aes(x = Family, y = log(Body_mass_female_mean)))  #define the variables
+p <- p + geom_boxplot()  #graph them in a boxplot
+p <- p + theme(axis.text.x = element_text(angle = 90))  #put x-axis names at 90deg
+p <- p + ylab("log(Female Body Mass)")  #rename y-axis title
+p  #show me the graph
+```
+
+# Challenge 6
+
+Scatterplots : Scatterplots are a natural tool for visualizing two continuous variables and can be made easily with the plot(x=XXX, y=YYY) function in {base} graphics (where XXX\* and YYY\*\* denote the names of the two variables you wish to plot). Transformations of the variables, e.g., log or square-root (sqrt()), may be necessary for effective visualization.
+
+Again using data from the KamilarAndCooperData dataset, plot the relationship between female body size and female brain size. Then, play with log transforming the data and plot again.
