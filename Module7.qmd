@@ -1,0 +1,87 @@
+---
+title: "Module7"
+format: html
+editor: visual
+---
+
+# Module 7
+
+```{r}
+library(sciplot)
+```
+
+# Challenge 1
+
+Given a vector, x <- c(1,2,3,4,5,6,7,8,9,10,100,1000), write a function to determine the geometric mean of the values in a vector. Remember the general form for functions is:
+
+function name <- function(arguments to pass){code to run}
+
+Geometric mean
+
+```{r}
+x <- c(1,2,3,4,5,6,7,8,9,10,100,1000)
+gm1 <- function(x) {
+  (prod(x))^(1/length(x))   #prod() gives product of all the elemetns multiplied together in the vector c
+}
+gm1(x)
+```
+
+## OR
+```{r}
+gm2 <- function(x) {
+    exp(mean(log(x)))
+}
+gm2(x)
+```
+
+HINT: The argument na.rm = TRUE and the function na.omit() may help you write more generic functions that exclude those pesky NA values.
+
+# Challenge 2
+
+sum of squares = the sum of the squared deviations of a set of values from the mean
+
+Write a function to calculate the sum of squares for a vector
+
+```{r}
+ss1 <- function(x) {
+    sum((x - mean(x))^2)
+}
+ss1(x)
+```
+
+## OR
+```{r}
+ss2 <- function(x) {
+    sum(x^2) - length(x) * mean(x)^2
+}
+ss2(x)
+```
+
+## OR
+```{r}
+ss3 <- function(x) {
+    sum(x^2) - (sum(x))^2/length(x)
+}
+ss3(x)
+```
+
+The sum of squares increases with sample size… you can see this by adding more data points to your vector. To be able to compare across data sets, we are then more interested in the average deviation of values from the mean rather than the straight sum of squares, i.e., a mean squared deviation. This is the definition of the variability or variance in a dataset. If we are simply interested in describing the mean squared deviation in a population, where we have a value or measurement for every case (e.g., the femur length of all of the vervet monkeys in a musuem population), we could then just divide the sum of squares by the number of cases.
+
+population variance = sum of squares / N
+
+```{r}
+pop_v <- function(x) {
+    sum((x - mean(x))^2)/(length(x))
+}
+pop_v(x)
+```
+
+If, however, we have not measured all of the individual cases in population… if we are, instead, dealing with a sample from the population and are trying to use that sample to say something about the population from which it is drawn (e.g., to say something about vervet monkey femur lengths in general based on those that appear in a museum sample) then we need to use a slightly different formula to get an unbiased estimate of the population variance. Such an estimate for a population parameter, based on data from a sample, is calculated as:
+
+sample variance = estimator of the population variance = sum of squares / (n - 1)
+
+In this formula, n - 1 is the number of degrees of freedom implied by the sample. The degrees of freedom is the number of values used to calculate a sample statistic that are free to vary. We used n observations to calculate the mean of our sample, and that implies n - 1 degrees of freedom. We use that statistic about our sample as an estimate of the population mean, which is used to derive an estimate of the population variance.
+
+hg
+
+
