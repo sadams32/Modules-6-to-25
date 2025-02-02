@@ -172,3 +172,136 @@ p  #show me the graph
 Scatterplots : Scatterplots are a natural tool for visualizing two continuous variables and can be made easily with the plot(x=XXX, y=YYY) function in {base} graphics (where XXX\* and YYY\*\* denote the names of the two variables you wish to plot). Transformations of the variables, e.g., log or square-root (sqrt()), may be necessary for effective visualization.
 
 Again using data from the KamilarAndCooperData dataset, plot the relationship between female body size and female brain size. Then, play with log transforming the data and plot again.
+
+```{r}
+attach(d)
+par(mfrow = c(1, 2))
+plot(x = Body_mass_female_mean, y = Brain_Size_Female_Mean)
+plot(x = log(Body_mass_female_mean), y = log(Brain_Size_Female_Mean))
+```
+
+```{r}
+detach(d)
+```
+
+## Alternative: ggplot2
+
+```{r}
+p <- ggplot(data = d, aes(x = log(Body_mass_female_mean), y = log(Brain_Size_Female_Mean),
+    color = factor(Family)))  # first, we build a plot object and color points by Family
+p <- p + xlab("log(Female Body Mass)") + ylab("log(Female Brain Size)")  # then we modify the axis labels
+p <- p + geom_point()  # then we make a scatterplot
+p <- p + theme(legend.position = "bottom", legend.title = element_blank())  # then we modify the legend
+p  # and, finally, we plot the object
+```
+
+Using {ggplot2}, we can also easily set up a grid for “faceting”" by a grouping variable
+
+```{r}
+p <- p + facet_wrap(~Family, ncol = 4)
+p <- p + theme(legend.position = "none")
+p
+```
+
+Add regression to plot
+
+```{r}
+p <- p + geom_smooth(method = "lm", fullrange = TRUE)
+p
+```
+
+# Challenge 7
+
+```{r}
+p <- ggplot(data = d, aes(x = log(Body_mass_female_mean), y = log(Mass_Dimorphism)))
+p <- p + geom_point()
+p <- p + geom_smooth(method = "lm")
+p
+```
+
+To calculate summary statistics for groups of observations in a data frame, there are many different approaches. One is to use the aggregate() function from the {stats} package (a standard package), which provides a quick way to look at summary statistics for sets of observations, though it requires a bit of clunky code. Here, we apply a particular function (FUN = "mean") to mean female body mass, grouped by Family.
+
+```{r}
+aggregate(d$Body_mass_female_mean ~ d$Family, FUN = "mean", na.rm = TRUE)
+```
+
+## OR
+
+```{r}
+aggregate(x = d["Body_mass_female_mean"], by = d["Family"], FUN = "mean", na.rm = TRUE)
+```
+
+### dplyr package how to
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+s <- filter(d, Family == "Hominidae" & Mass_Dimorphism > 2)
+head(s)  # filtering a data frame for certain rows...
+```
+
+```{r}
+s <- arrange(d, Family, Genus, Body_mass_male_mean)  # rearranging a data frame...
+head(s)
+```
+
+```{r}
+s <- select(d, Family, Genus, Body_mass_male_mean)  # selecting specific columns...
+head(s)
+```
+
+```{r}
+s <- rename(d, Female_Mass = Body_mass_female_mean)
+head(s$Female_Mass)  # renaming columns...
+```
+
+```{r}
+s <- mutate(d, Binomial = paste(Genus, Species, sep = " "))
+head(s$Binomial)  # and adding new columns...
+```
+
+```{r}
+s <- summarise(d, avgF = mean(Body_mass_female_mean, na.rm = TRUE), avgM = mean(Body_mass_male_mean,
+    na.rm = TRUE))
+s
+```
+
+```{r}
+byFamily <- group_by(d, Family)
+byFamily
+```
+
+```{r}
+s <- summarise(byFamily, avgF = mean(Body_mass_female_mean, na.rm = TRUE), avgM = mean(Body_mass_male_mean,
+    na.rm = TRUE))
+s
+```
+
+## Piping
+
+You can pipe instead of nest operations Below accomplishes what the previous line did
+
+```{r}
+s <-                  #to create dataframe "s"
+  d %>%                 #take dataframe "d"
+  group_by(Family) %>%  #Group it by Family
+  summarise(avgF = mean(Body_mass_female_mean, na.rm=TRUE),      #And calculate mean male BM
+            avgM = mean(Body_mass_male_mean, na.rm=TRUE))        #And mean female BM
+s
+```
+
+### Challenge 8
+
+Add a variable, Binomial to our data frame d, which is a concatenation of the Genus and Species… Trim the data frame to only include the variables Binomial, Family, Body_mass_female_mean, Body_mass_male_mean and Mass_Dimorphism… Group these by Binomial (in other words, by species but with full binomial nomenclature)… And calculate the average value for female body mass, male body mass, and mass dimorphism.
+
+```{r}
+s <- d %>%
+    mutate(Binomial = paste(Genus, Species, sep = " ")) %>%
+    select(Binomial, Body_mass_female_mean, Body_mass_male_mean, Mass_Dimorphism) %>%
+    group_by(Binomial) %>%
+    summarise(avgF = mean(Body_mass_female_mean, na.rm = TRUE), avgM = mean(Body_mass_male_mean,
+        na.rm = TRUE), avgBMD = mean(Mass_Dimorphism, na.rm = TRUE))
+s
+```
