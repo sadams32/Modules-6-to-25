@@ -12,14 +12,14 @@ library(sciplot)
 
 # Challenge 1
 
-Given a vector, x <- c(1,2,3,4,5,6,7,8,9,10,100,1000), write a function to determine the geometric mean of the values in a vector. Remember the general form for functions is:
+Given a vector, x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25, 50, 100, 200, 1000), write a function to determine the geometric mean of the values in a vector. Remember the general form for functions is:
 
 function name <- function(arguments to pass){code to run}
 
 Geometric mean
 
 ```{r}
-x <- c(1,2,3,4,5,6,7,8,9,10,100,1000)
+x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25, 50, 100, 200, 1000)
 gm1 <- function(x) {
   (prod(x))^(1/length(x))   #prod() gives product of all the elemetns multiplied together in the vector c
 }
@@ -82,6 +82,223 @@ sample variance = estimator of the population variance = sum of squares / (n - 1
 
 In this formula, n - 1 is the number of degrees of freedom implied by the sample. The degrees of freedom is the number of values used to calculate a sample statistic that are free to vary. We used n observations to calculate the mean of our sample, and that implies n - 1 degrees of freedom. We use that statistic about our sample as an estimate of the population mean, which is used to derive an estimate of the population variance.
 
-hg
+# Challenge 3
+
+Write a function to calculate the variance for a vector of values representing a sample of measurements. Compare the results of your function to the built-in function, var(), which calculates sample variance.
+
+```{r}
+sample_v <- function(x) {
+  sum((x - mean(x))^2)/(length(x) - 1)
+}
+sample_v(x)
+```
+
+How does Sample Variance compare to Population Variance? What happens to the sample variance as sample size increases?
+
+For a random variable, how is variance related to sample size? Let’s explore this…
+
+```{r}
+# (1) Set up a plot
+plot(c(0, 50), c(0, 15), type = "n", xlab = "Sample size", ylab = "Variance")
+
+# (2) Create a random variable drawn from a normal distribution using the rnorm() function. Let’s use for loops to do this for samples of size 5, 10, 15… up to 50, with 50 replicates at each size. The structure for for loops is: for (counter in vector){code to run}
+
+for (n in seq(5, 50, 5)) # samples of 5, 10, 15... 15...
+{
+    for (i in 1:50) # 50 replicates for (i in 1:50) # 50 replicates
+    {
+        x <- rnorm(n, mean = 10, sd = 2)
+        points(n, var(x))
+    }
+}
+```
+
+Another measure of spread around a mean that we often see reported is the standard deviation. The standard deviation is simply the square root of the variance. The advantage of using the standard deviation as a statistic or parameter is that the units of standard deviation are the same as those of our original measurement (rather than being units squared, our units for variance).
+
+```{r}
+pop_sd <- function(x) {
+    sqrt(pop_v(x))
+}
+pop_sd(x)
+```
+
+```{r}
+sample_sd <- function(x) {
+    sqrt(sample_v(x))
+}
+sample_sd(x)
+```
 
 
+Using Measures of Spread
+
+Describing Uncertainty in Estimated Parameters
+We would also like to have an idea, based on characteristics of our sample, how reliable or unreliable our estimates of population parameters based on those samples are. In general, we would expect such a measure of uncertainty, or error, to increase with the variability in our sample (estimates with high variability are more uncertain) and to decrease as we sample more. That is, it should be proportional to the ratio of variance to sample size.
+
+Also, ideally, the units for our estimate of error should be the same as those of our original measurements. Since the ratio above would be expressed in square units (since sample size is dimensionless), we can take the square root to express it in units.
+
+The standard error of the mean, based on a sample, can thus be defined as follows:
+
+SE mean = square root of the average sample variance
+
+or
+
+SE mean = square root of (sample variance / number of observations)
+
+or
+
+SE mean = (sample standard deviation) / square root of (number of observations)
+
+# Challenge 4
+
+Write a function to calculate the standard error of the mean for a vector of values representing a sample of measurements. You can use either your own function for sample variance or the built-in var() function
+
+```{r}
+SE1 <- function(x) {
+    sqrt(sample_v(x)/length(x))
+}
+SE1(x)
+```
+
+## OR
+```{r}
+SE2 <- function(x) {
+    sqrt(var(x)/length(x))
+}
+SE2(x)
+```
+
+The package {sciplot} also includes the function, se(), for calculating standard errors (as do others).
+
+```{r}
+library(sciplot)
+se(x)
+```
+
+Calculating Confidence Intervals using Standard Errors
+Standard errors can be used to calculate the confidence intervals around an estimate. A confidence interval shows the likely range of values into which an estimate would fall if the sampling exercise were to be repeated. We can talk about different confidence intervals (e.g., 50%, 95%, 99%), and the higher the confidence we want to have, the wider the interval will be.
+
+The 95% confidence interval, then, describes the range of values into which a statistic, calculated based on a repeated sample, would be expected to fall 95% of the time. We typically estimate confidence intervals with respect to specific theoretical distributions (e.g., normal, Poisson, Student’s t, F) and different characteristics about our sample (e.g., mean, standard deviation, degrees of freedom).
+
+For example, suppose we wanted to calculate a 95% confidence interval around our estimate of the mean for a particular set of observations, assuming those data reflect a random variable that is normally distributed and that our observations are independent. We would simply find the values corresponding to the numbers of standard errors away from the mean our statistic would be expected to fall 95% of the time.
+
+We can calculate this by multiplying our estimate of the standard error by the quantile normal (qnorm()) function. Basically, we give the qnorm() function a quantile, and it returns the value of 𝑋
+ below which that proportion of the cumulative probability function falls. For example, qnorm(0.025, mean=0, sd=1) tells us the number of standard deviations away from the mean that correspond with up to 2.5% of of the normal distribution with mean=0 and sd=1. qnorm(0.975, mean=0, sd=1) tells us the number of standard deviations up to which 97.5% of observations should fall.
+
+Let’s take a quick look at the NORMAL DISTRIBUTION. Here, we use the rnorm() function to sample 10000 numbers from a normal distribution with mean = 0 and standard deviation = 1. [I am using set.seed() here so that each time I run this function, I return the same set of random numbers.]
+
+```{r}
+set.seed(1)
+x <- rnorm(10000, 0, 1)
+hist(x)
+```
+
+Now try this… plot the density and probability distributions for a normal distribution. In these plots, cex= sets the size of the points being plotted.
+
+```{r}
+x <- seq(from = -4, to = 4, by = 0.01)
+plot(x, dnorm(x), cex = 0.4)
+```
+
+```{r}
+plot(x, pnorm(x), cex = 0.4)
+```
+
+"The qnorm function in R is used to find the quantile of a normal distribution at a specific cumulative density. It is the inverse of the cumulative normal function, also known as pnorm" (Google AI overview explanation)    
+
+```{r}
+x <- seq(from = 0, to = 1, by = 0.01)
+plot(qnorm(x), x, cex = 0.4)
+```
+
+Returning to calculating CIs, suppose we have this vector:
+
+```{r}
+x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)
+m <- mean(x)
+n <- length(x)
+v <- var(x)
+s <- sd(x)
+e <- sqrt(v/n)
+upper <- mean(x) + qnorm(0.975, mean = 0, sd = 1) * se(x)
+lower <- mean(x) + qnorm(0.025, mean = 0, sd = 1) * se(x)  # or lower <- mean(x) - qnorm(0.975)*se(x)
+ci <- c(lower, upper)
+ci
+```
+
+## OR
+```{r}
+upper <- m + qnorm(0.975, mean = 0, sd = 1) * e
+lower <- m + qnorm(0.025, mean = 0, sd = 1) * e  # or lower <- m - qnorm(0.975)*e
+ci <- c(lower, upper)
+ci
+```
+
+## OR
+```{r}
+normalCI = function(x, CIlevel = 0.95) {
+    upper = m + qnorm(1 - (1 - CIlevel)/2) * sqrt(var(x)/length(x))
+    lower = m + qnorm((1 - CIlevel)/2) * sqrt(var(x)/length(x))
+    ci <- c(lower, upper)
+    return(ci)
+}
+normalCI(x, 0.95)  # call the function
+```
+
+Interpretation of CIs:
+
+Based on the given data (with a particular mean, variance, and sample size) we are 95% confident that the true mean of the population is between these bounds.
+
+A repeated sample from the same distribution is expected to fall into this interval 95% of the time.
+
+-
+
+Calculating Confidence Intervals by Bootstrapping
+
+An alternative way to calculate a confidence interval is by simulation, which does not presume the underlying distribution from which the random variable is drawn. Here, we use the sample() function to sample, with replacement, 15 numbers from our vector x a total of 10000 times.
+
+```{r}
+set <- NULL  # sets up a dummy variable to hold our 10000 simulations
+n <- 15 # n = size of each sample
+for (i in 1:10000) {
+    set[i] <- mean(sample(x, n, replace = TRUE))
+}
+```
+
+The quantile() function returns, for your set of data, the observations satisfying the nth quantile.
+
+```{r}
+quantile(set)
+```
+
+```{r}
+quantile(set, c(0.025, 0.975))
+```
+
+# Challenge 5
+
+How does the CI calculated this way, by simulation, compare to that calculated based on assuming a normal distribution?
+
+saadams// the range appears slightly smaller for the CI generated from the simulation
+
+How does the width of the CI change with decreasing or increasing n (the number of observations drawn from your sample with replacement)? For example, if we set n at 5? At 50? At 500?
+
+saadams// Based on the simulations below, a smaller n leads to a wider CI range and a largern leads to a narrower CI range.
+
+```{r}
+set <- NULL  # sets up a dummy variable to hold our 10000 simulations
+n <- 5 # n = size of each sample
+for (i in 1:10000) {
+    set[i] <- mean(sample(x, n, replace = TRUE))
+}
+quantile(set, c(0.025, 0.975))
+```
+
+```{r}
+set <- NULL  # sets up a dummy variable to hold our 10000 simulations
+n <- 50 # n = size of each sample
+for (i in 1:10000) {
+    set[i] <- mean(sample(x, n, replace = TRUE))
+}
+quantile(set, c(0.025, 0.975))
+```
