@@ -305,3 +305,18 @@ s <- d %>%
         na.rm = TRUE), avgBMD = mean(Mass_Dimorphism, na.rm = TRUE))
 s
 ```
+
+
+Acccording to Kamilar & Cooper’s (2013) dataset, what is the average male and female size, and body mass dimorphism of my two main study species (vervet monkeys, Chlorocebus pygerythrus; and woolly monkeys, Lagothrix lagotricha)? Which has a larger average female body mass? Which is more sexually dimorphic?
+
+```{r}
+cp <- s %>%
+  filter(Binomial =="Chlorocebus pygerythrus")
+ll <- s %>%
+  filter(Binomial == "Lagothriz lagotricha")
+cp
+ll
+
+```
+
+Compare the body size of my two main study taxa at the Family level (i.e., Cercopithecidae vs. Atelidae) by plotting (using {ggplot2}) the body mass of males and females and sexual dimorphism. If you can, make the Cercopithecid boxes green, and the Atelid boxes purple.
