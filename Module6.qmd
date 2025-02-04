@@ -320,3 +320,25 @@ ll
 ```
 
 Compare the body size of my two main study taxa at the Family level (i.e., Cercopithecidae vs. Atelidae) by plotting (using {ggplot2}) the body mass of males and females and sexual dimorphism. If you can, make the Cercopithecid boxes green, and the Atelid boxes purple.
+
+# THIS IS UNFINISHED
+```{r}
+cp <- d %>%
+  filter(Family == "Cercopithecidae" |
+         Family == "Atelidae") %>%
+  select(Family, Body_mass_female_mean, Body_mass_male_mean, Mass_Dimorphism) %>%
+  na.omit
+cp
+
+myColors <- ifelse(Family=="Cercopithecidae" , rgb(0.1,0.1,0.7,0.5) , 
+              ifelse(Family=="Atelidae", rgb(0.8,0.1,0.3,0.6),
+              "grey90" ) )
+
+par(mfrow = c(1, 3))
+boxplot(log(Body_mass_female_mean) ~ Family, cp, col=myColors)
+boxplot(log(Body_mass_male_mean) ~ Family, cp) 
+boxplot(log(Mass_Dimorphism) ~ Family, cp) 
+
+
+```
+
