@@ -236,3 +236,338 @@ var <- sum((seq(1:6) - mean(seq(1:6)))^2 * (1/6))
 var
 ```
 
+**note: I stopped writing all the notes because it was getting to be too much**
+
+# Useful Probability Distributions for Random Variables
+
+## Challenge 3
+The Bernoulli Distribution is the probability distribution of a binary random variable, i.e., a variable that has only two possible outcomes, such as success or failure, heads or tails, true or false.
+
+For this distribution, u = p and variance = p(1-p)
+f(x) = p^x * (1-p)^(1-x) where x = {0 or 1}
+ 
+Using the Bernoulli distribution, calculate the expectation for drawing a spade from a deck of cards? What is the variance in this expectation across a large number of draws?
+
+P(spade) = (13/52)^1 * (39/52)^0
+var(spade) = (13/52) * (1 - (13/52))
+
+See online notes for binomial distribution mass probability function.
+
+## Challenge 4
+
+What is the chance of getting a “1” on each of six consecutive rolls of a die? What about of getting exactly three “1”s? What is the expected number of “1”s to occur in six consecutive rolls?
+
+```{r}
+n <- 6  # number of trials
+k <- 6  # number of successes
+p <- 1/6
+prob <- (factorial(n)/(factorial(k) * factorial(n - k))) * (p^k) * (1 - p)^(n - k)
+prob
+```
+
+```{r}
+k <- 3  # number of successes
+prob <- (factorial(n)/(factorial(k) * factorial(n - k))) * (p^k) * (1 - p)^(n - k)
+prob
+```
+
+As for other distributions, R has a built in density function, the dbinom() function, that you can use to solve for the probability of a given outcome, i.e., Pr (X = x)
+
+```{r}
+dbinom(x = k, size = n, prob = p)
+```
+
+We can also use the built in function pbinom() to return the value of the cumulative distribution function for the binomial distribution, i.e., the probability of observing up to and including a given number of successes in n trials.
+
+So, for example, the chances of observing exactly 0, 1, 2, 3, … 6 rolls of “1” on 6 rolls of a die are…
+
+```{r}
+probset <- dbinom(x = 0:6, size = 6, prob = 1/6)  # x is number of successes, size is number of trials
+barplot(probset, names.arg = 0:6, space = 0, xlab = "outcome", ylab = "Pr(X = outcome)",
+    main = "Probability Mass Function")
+```
+
+```{r}
+cumprob = cumsum(probset)
+barplot(cumprob, names.arg = 0:6, space = 0.1, xlab = "outcome", ylab = "Cumulative Pr(X)",
+    main = "Cumulative Probability")
+```
+
+```{r}
+sum(probset)  # equals 1, as it should
+
+dbinom(x = 3, size = 6, prob = 1/6) # The chance of observing exactly 3 rolls of “1”
+
+pbinom(q = 3, size = 6, prob = 1/6)  # And the chance of observing up to and including 3 rolls of “1”; note the name of the argument is q not x
+
+sum(dbinom(x = 0:3, size = 6, prob = 1/6))  # this sums the probabilities of 0, 1, 2, and 3 successes (same as using pbinom)
+
+1 - pnbinom(q = 3, size = 6, prob = 1/6) # The probability of observing more than 3 rolls of “1”
+# OR
+pnbinom(q = 3, size = 6, prob = 1/6, lower.tail = FALSE)
+
+1 - pbinom(q = 2, size = 6, prob = 1/6)  # The probability of observing 3 or more rolls of “1”; note here that the q argument is '2'
+# OR
+pbinom(q = 2, size = 6, prob = 1/6, lower.tail = FALSE)
+```
+
+Poisson Distribution
+: The Poisson Distribution is often used to model open ended counts of independently occuring events, for example the number of cars that pass a traffic intersection over a given interval of time or the number of times a monkey scratches itself during a given observation interval. The probability mass function for the Poisson distribution is described by a single parameter, lambda, where lambda can be interpreted as the mean number of occurrences of the event in the given interval.
+
+Note: mean and variance both = lambda
+
+```{r}
+x <- 0:10
+l = 3.5
+probset <- dpois(x = x, lambda = l)
+barplot(probset, names.arg = x, space = 0, xlab = "x", ylab = "Pr(X = x)", main = "Probability Mass Function")
+```
+
+```{r}
+x <- 0:10
+l = 3.5
+probset <- dpois(x = x, lambda = l)
+barplot(probset, names.arg = x, space = 0, xlab = "x", ylab = "Pr(X = x)", main = "Probability Mass Function")
+```
+
+```{r}
+x <- 0:20
+l = 10
+probset <- dpois(x = x, lambda = l)
+barplot(probset, names.arg = x, space = 0, xlab = "x", ylab = "Pr(X = x)", main = "Probability Mass Function")
+```
+
+```{r}
+x <- 0:50
+l = 20
+probset <- dpois(x = x, lambda = l)
+barplot(probset, names.arg = x, space = 0, xlab = "x", ylab = "Pr(X = x)", main = "Probability Mass Function")
+```
+
+As we did for other distributions, we can also use the built in probability function for the Poisson distribution, ppois(), to return the value of the cumulative distribution function, i.e., the probability of observing up to and including a specific number of events in the given interval.
+
+```{r}
+x <- 0:10
+l <- 3.5
+barplot(ppois(q = x, lambda = l), ylim = 0:1, space = 0, names.arg = x, xlab = "x", ylab = "Pr(X ≤ x)", main = "Cumulative Probability")
+```
+
+```{r}
+x <- 0:20
+l <- 10
+barplot(ppois(q = x, lambda = l), ylim = 0:1, space = 0, names.arg = x, xlab = "x", ylab = "Pr(X ≤ x)", main = "Cumulative Probability")
+```
+
+```{r}
+x <- 0:50
+l <- 20
+barplot(ppois(q = x, lambda = l), ylim = 0:1, space = 0, names.arg = x, xlab = "x", ylab = "Pr(X ≤ x)", main = "Cumulative Probability")
+```
+
+## Probability Density Functions
+
+Uniform Distribution
+: The Uniform Distribution is the simplest probability density function describing a continuous random variable. The probability is uniform and does not fluctuate across the range of x values in a given interval.
+
+## Challenge 5
+
+```{r}
+a <- 4
+b <- 8
+x <- seq(from = a - (b - a), to = b + (b - a), by = 0.01)
+fx <- dunif(x, min = a, max = b)  # dunif() evaluates the density at each x
+plot(x, fx, type = "l", xlab = "x", ylab = "f(x)", main = "Probability Density Function")
+```
+
+Note that for the uniform distribution, the cumulative density function increases linearly over the given interval.
+
+```{r}
+plot(x, punif(q = x, min = a, max = b), type = "l", xlab = "x", ylab = "Pr(X ≤ x)", main = "Cumulative Probability")  # punif() is the cumulative probability density up to a given x
+```
+
+## Challenge 6
+Simulate a sample of 10000 random numbers from a uniform distribution in the interval between a = 6 and b = 8. Calculate the mean and variance of this simulated sample and compare it to the expectation for these parameters.
+
+```{r}
+# Define parameters
+a <- 6
+b <- 8
+n <- 10000
+
+# Generate random sample
+sample <- runif(n, min = 6, max = 8)
+
+# Mean and variance
+sample_m <- mean(sample)
+sample_var <- var(sample)
+
+sample_m
+sample_var
+```
+
+## Normal Distribution
+
+mu and sigma are used to describe a normal distribution
+
+```{r}
+mu <- 4
+sigma <- 1.5
+curve(dnorm(x, mu, sigma), mu - 4 * sigma, mu + 4 * sigma, main = "Normal Curve", xlab = "x", ylab = "f(x)")
+```
+
+dnorm
+```{r}
+library(manipulate)
+manipulate(plot(seq(from = (mu - 4 * sigma), to = (mu + 4 * sigma), length.out = 1000),
+    dnorm(seq(from = (mu - 4 * sigma), to = (mu + 4 * sigma), length.out = 1000),
+        mean = mu, sd = sigma), type = "l", xlim = c(mu - 4 * sigma, mu + 4 *
+        sigma), xlab = "x", ylab = "f(x)", main = "Normal Probability Density Function") +
+    polygon(rbind(c(mu - nsigma * sigma, 0), cbind(seq(from = (mu - nsigma *
+        sigma), to = (mu + nsigma * sigma), length.out = 1000), dnorm(seq(from = (mu -
+        nsigma * sigma), to = (mu + nsigma * sigma), length.out = 1000), mean = mu,
+        sd = sigma)), c(mu + nsigma * sigma, 0)), border = NA, col = "salmon") +
+    abline(v = mu, col = "blue") + abline(h = 0) + abline(v = c(mu - nsigma *
+    sigma, mu + nsigma * sigma), col = "salmon"), mu = slider(-10, 10, initial = 0,
+    step = 0.25), sigma = slider(0.25, 4, initial = 1, step = 0.25), nsigma = slider(0,
+    4, initial = 0, step = 0.25))
+```
+
+pnorm
+```{r}
+manipulate(plot(seq(from = (mu - 6 * sigma), to = (mu + 6 * sigma), length.out = 1000),
+    pnorm(seq(from = (mu - 6 * sigma), to = (mu + 6 * sigma), length.out = 1000),
+        mean = mu, sd = sigma), type = "l", xlim = c(-20, 20), xlab = "x", ylab = "f(x)",
+    main = "Cumulative Probability"), mu = slider(-10, 10, initial = 0, step = 0.25),
+    sigma = slider(0.25, 10, initial = 1, step = 0.25))  # plots the cumulative distribution function
+```
+
+For a normally distributed population variable with mu = 6 and sigma = 2, the probability of a random observation falling between 7 and 8 is…
+
+```{r}
+p <- pnorm(8, mean = 6, sd = 2) - pnorm(7, mean = 6, sd = 2)
+p
+```
+
+Calculate the probability of an observation falling, for example within 2 standard deviations of the mean of a particular normal distribution.
+
+```{r}
+mu <- 0
+sigma <- 1
+p <- pnorm(mu + 2 * sigma, mean = mu, sd = sigma) - pnorm(mu - 2 * sigma, mean = mu,
+    sd = sigma)
+p
+```
+
+Regardless of the specific values of mean and sigma , about 95% of the normal distribution falls within 2 standard deviations of the mean and about 68% of the distribution falls within 1 standard deviation.
+
+```{r}
+p <- pnorm(mu + 1 * sigma, mean = mu, sd = sigma) - pnorm(mu - 1 * sigma, mean = mu,
+    sd = sigma)
+p
+```
+
+Another one of the main functions in R for probability distributions, the qnorm() function, will tell us the value of x below which a given proportion of the cumulative probability function falls. As we saw earlier, too, we can use qnorm() to calculate confidence intervals.
+
+```{r}
+manipulate(plot(seq(from = (mu - 4 * sigma), to = (mu + 4 * sigma), length.out = 1000),
+    dnorm(seq(from = (mu - 4 * sigma), to = (mu + 4 * sigma), length.out = 1000),
+        mean = mu, sd = sigma), type = "l", xlim = c(mu - 4 * sigma, mu + 4 *
+        sigma), xlab = "x", ylab = "f(x)", main = "Normal Probability Density Function") +
+    abline(v = mu, col = "blue") + abline(h = 0) + polygon(x = c(qnorm((1 -
+    CI)/2, mean = mu, sd = sigma), qnorm((1 - CI)/2, mean = mu, sd = sigma),
+    qnorm(1 - (1 - CI)/2, mean = mu, sd = sigma), qnorm(1 - (1 - CI)/2, mean = mu,
+        sd = sigma)), y = c(0, 1, 1, 0), border = "red"), mu = slider(-10, 10,
+    initial = 0, step = 0.25), sigma = slider(0.25, 10, initial = 1, step = 0.25),
+    CI = slider(0.5, 0.99, initial = 0.9, step = 0.01))
+```
+
+## Challenge 7
+
+Create a vector, v, containing n random numbers selected from a normal distribution with mean mu and standard deviation sigma. Use 1000 for n, 3.5 for mu, and 4 for sigma. HINT: Such a function exists! rnorm().
+
+Calculate the mean, variance, and standard deviation for your sample of random numbers.
+
+Plot a histogram of your random numbers.
+
+```{r}
+mu <- 3.5
+sigma <- 4
+n <- 1000
+
+v <- rnorm(n, mu, sigma)
+mean(v)
+var(v)
+sd(v)
+
+hist(v, breaks = seq(from = -15, to = 20, by = 0.5), probability = TRUE)
+```
+
+A quantile-quantile or “Q-Q” plot can be used to look at whether a set of data seem to follow a normal distribution. A Q–Q plot is a graphical method for generally comparing two probability distributions. To examine a set of data for normality graphically, you plot the quantiles for your actual data (as the y values) versus the theoretical quantiles (as the x values) pulled from a normal distribution. If the two distributions being compared are similar, the points in the plot will approximately lie on the line y = x.
+
+In this case, this should be apparent since you have simulated a vector of data from a distribution normal distribution.
+
+To quickly do a Q-Q plot, call the two R functions qqnorm() and qqline() using the vector of data you want to examine as an argument.
+
+```{r}
+qqnorm(v, main = "Normal QQ plot random normal variables")
+qqline(v, col = "gray")
+```
+
+## Challenge 8
+
+What happens if you simulate fewer observations in your vectors? Or if you simulate observations from a different distribution?
+
+Different n
+```{r}
+mu <- 3.5
+sigma <- 4
+n <- 100
+
+v <- rnorm(n, mu, sigma)
+mean(v)
+var(v)
+sd(v)
+
+hist(v, breaks = seq(from = -15, to = 20, by = 0.5), probability = TRUE)
+```
+
+Different distribution
+
+```{r}
+mu <- 2
+sigma <- 1
+n <- 1000
+
+v <- rnorm(n, mu, sigma)
+mean(v)
+var(v)
+sd(v)
+
+hist(v, breaks = seq(from = -15, to = 20, by = 0.5), probability = TRUE)
+```
+
+## The "Standard Normal" Distribution
+
+Any normal distribution with mean mu and standard deviation sigma can be converted into what is called the standard normal distribution, where the mean is zero and the standard deviation is 1.
+
+```{r}
+x <- rnorm(10000, mean = 5, sd = 8)  # simulate from a normal distribution with mean 5 and SD 8
+hist(x)
+
+mean(x) # very close to 5
+sd(x) # very close to 8
+
+z <- (x - mean(x))/sd(x)  # standardized! Z scores reflect the number of standard deviations an observation is from the mean.
+hist(z)
+
+mean(z)  # very close to zero
+sd(z)  # very close to 1
+```
+
+# Sample Distributions versus Population Distributions
+
+It is important to recognize that, above, we were dealing with probability distributions of discrete and continuous random variables as they relate to populations. But, as we have talked about before, we almost never measure entire populations; instead, we measure samples from populations and we characterize our samples using various statistics. The theoretical probability distributions described above (and others) are models for how we connect observed sample data to populations, taking into account various assumptions, and this is what allows us to do many types of inferential statistics. The most fundamental assumption is that the observations we make are independent from one another and are identically distributed, an assumption often abbreviated as **iid**. Obvious cases of violation of this assumption are rife in the scientific literature, and we should always be cautious about making this assumption!
+
+The important thing for us to know is that we can get unbiased estimates of population level parameters on the basis of sample statistics.
+
+Let’s imagine a population of 1 million zombies whose age at zombification is characterized by a normal distribution with a mean of 25 years and a standard deviation of 5 years. Below, we set up our population:
