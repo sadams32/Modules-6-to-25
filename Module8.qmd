@@ -4,23 +4,122 @@ format: html
 editor: visual
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+install.packages("manipulate")
 ```
 
-You can add options to executable code like this
+# Notes
+
+Population
+
+:   includes all of the elements from a set of data = N
+
+Sample
+
+:   one or more observations from a population = n
+
+Parameter
+
+:   a measurable characteristic of a population
+
+Statistic
+
+:   a measurable characteristic about a sample
+
+When we do **statistical inference** we are basically trying to draw conclusions about a population based on measurements from a noisy sample or trying to evaluate whether it is reasonable to assume that our sample is drawn from a particular population.
+
+# Probability
+
+### Example: Rolling a Die
+
+We will use the {manipulate} package and the sample() function to explore the effects of sample size on estimates of the probability of different outcomes. The probability of each outcome (rolling a “1”, “2”,…, “6”) is 1 in 6, but our estimate of the probability of each possible outcome will change with sample size.
+
+NOTE: To run {manipulate} effectively, you must run the code directly in the console (i.e., copy and paste the code into the console; using the ‘green arrow’ or ‘Run’ buttons on a {manipulate} chunk won’t have the desired effect). When you run the code as pasted into the console, the graph will appear in the Plots tab of your lower right RStudio pane. Once there, look to the upper left corner of the graph and you should see a small image of a gear. Click on the gear image and a slider will appear, allowing you to manipulate/toggle the sample size (n) of die rolls used to generate the graph.
+
+In this particular graph, you should be able to see the difference in random sampling distribution of die roll outcomes for a given sample size, and how they change as sample size changes.
 
 ```{r}
-#| echo: false
-2 * 2
+outcomes <- c(1, 2, 3, 4, 5, 6)
+manipulate(hist(sample(outcomes, n, replace = TRUE), breaks = c(0.5, 1.5, 2.5,
+    3.5, 4.5, 5.5, 6.5), probability = TRUE, main = paste("Histogram of Outcomes of ",
+    n, " Die Rolls", sep = ""), xlab = "roll", ylab = "probability"), n = slider(0,
+    10000, initial = 10, step = 10))
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+## Challenge 1
+
+Write a function to simulate rolling a die where you pass the number of rolls as an argument. Then, use your function to simulate rolling two dice 1000 times and take the sum of the rolls. Plot a histogram of those results.
+
+```{r}
+nrolls <- 1000
+roll <- function(x) {
+    sample(1:6, x, replace = TRUE) # size = x = the number of elements you want to randomly sample from 1:6.
+}
+two_dice <- roll(nrolls) + roll(nrolls)
+hist(two_dice, breaks = c(1.5:12.5), probability = TRUE, main = "Rolling Two Dice",
+    xlab = "sum of rolls", ylab = "probability")
+```
+
+## Challenge 2
+
+You have a deck of 52 cards, Ace to 10 + 3 face cards in each suit. You draw a card at random.
+
+```{r}
+ndraw <- 10000
+draw <- function(x) {
+  sample(deck, x, replace = TRUE)
+}
+```
+
+What is the probability that you draw a face card?
+
+```{r}
+deck <- c(rep("Face Card", 12), rep("Other", 40))
+draws1 <- draw(ndraw)
+prob1 = mean(draws1 == "Face Card")
+prob1
+```
+
+What is the probability that you draw a King?
+
+```{r}
+deck <- c(rep("King", 4), rep("Other", 48))
+draws2 <- draw(ndraw)
+prob2 = mean(draws2 == "King")
+prob2
+```
+
+What is the probability that you draw a spade?
+
+```{r}
+deck <- c(rep("Spade", 13), rep("Other",39))
+draws3 <- draw(ndraw)
+prob3 = mean(draws3 == "Spade")
+prob3
+```
+
+What is the probability that you draw a spade given that you draw a face card?
+
+
+What is the probability that you draw a King given that you draw a face card?
+
+What is the probability that you draw a card that is both from a red suit (hearts or diamonds) and a face card?
+
+# Random Variables
+
+A random variable is a variable whose outcomes are assumed to arise by chance or according to some random or stochastic mechanism. The chances of observing a specific outcome or an outcome value within a specific interval has associated with it a probability.
+
+A probability function is a mathematical function that describes the chance associated with a random variable having a particular outcome or falling within a given range of outcome values.
+
+We can also distinguish two types of probability functions:
+
+(1) **Probability Mass Functions (PMFs)** are associated with discrete random variables. These functions describe the probability that a random variable takes a particular discrete value.
+
+To be a valid PMF, a function 𝑓(𝑥) must satisfy the following
+: There are 𝑘distinct outcomes 𝑥1,𝑥2,...,𝑥𝑘
+: Pr(X=xi) is greater than 0 and less than 1 for all xi
+: Sum of Pr(X = xi) for all x from x1 to xk = 1
+
+
+
+
