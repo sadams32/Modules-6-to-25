@@ -39,6 +39,7 @@ NOTE: To run {manipulate} effectively, you must run the code directly in the con
 In this particular graph, you should be able to see the difference in random sampling distribution of die roll outcomes for a given sample size, and how they change as sample size changes.
 
 ```{r}
+library(manipulate)
 outcomes <- c(1, 2, 3, 4, 5, 6)
 manipulate(hist(sample(outcomes, n, replace = TRUE), breaks = c(0.5, 1.5, 2.5,
     3.5, 4.5, 5.5, 6.5), probability = TRUE, main = paste("Histogram of Outcomes of ",
@@ -100,7 +101,6 @@ prob3
 
 What is the probability that you draw a spade given that you draw a face card?
 
-
 What is the probability that you draw a King given that you draw a face card?
 
 What is the probability that you draw a card that is both from a red suit (hearts or diamonds) and a face card?
@@ -115,11 +115,124 @@ We can also distinguish two types of probability functions:
 
 (1) **Probability Mass Functions (PMFs)** are associated with discrete random variables. These functions describe the probability that a random variable takes a particular discrete value.
 
-To be a valid PMF, a function 𝑓(𝑥) must satisfy the following
-: There are 𝑘distinct outcomes 𝑥1,𝑥2,...,𝑥𝑘
-: Pr(X=xi) is greater than 0 and less than 1 for all xi
-: Sum of Pr(X = xi) for all x from x1 to xk = 1
+To be a valid PMF, a function must satisfy the following
 
+:   There are 𝑘distinct outcomes 𝑥1,𝑥2,...,𝑥𝑘
 
+:   Pr(X=xi) is greater than 0 and less than 1 for all xi
 
+:   Sum of Pr(X = xi) for all x from x1 to xk = 1
+
+### Flipping a Fair Coin
+
+```{r}
+outcomes <- c("heads", "tails")
+prob <- c(1/2, 1/2)
+barplot(prob, ylim = c(0, 0.6), names.arg = outcomes, space = 0.1, xlab =
+          "outcome", ylab = "Pr(X = outcome)", main = "Probability Mass Function")
+```
+
+Cumulative Probability
+
+```{r}
+cumprob <- cumsum(prob)
+barplot(cumprob, names.arg = outcomes, space = 0.1, xlab = "outcome", ylab = "Cumulative Pr(X)", main = "Cumulative Probability")
+```
+
+### Rolling a Fair Die
+
+```{r}
+outcomes <- c(1, 2, 3, 4, 5, 6)
+prob <- c(1/6, 1/6, 1/6, 1/6, 1/6, 1/6)
+barplot(prob, ylim = c(0, 0.5), names.arg = outcomes, space = 0.1, xlab = "outcome", ylab = "Pr(X = outcome)", main = "Probability Mass Function")
+```
+
+Cumulative Probability
+
+```{r}
+cumprob <- cumsum(prob)
+barplot(cumprob, names.arg = outcomes, space = 0.1, xlab = "outcome", ylab = "Cumulative Pr(X)", main = "Cumulative Probability")
+```
+
+(2) **Probability Density Functions (PDFs)** are associated with continuous random variables. These functions describe the probability that a random variable falls within a given range of outcome values. The probability associated with that range equals the area under the density function for that range.
+
+To be a valid PDF, a function must satisfy the following:
+: The function is non-negative (greater than 0) for any given x
+: The total area under the function = 1
+
+### Example: Beta Distribution
+
+The Beta Distribution refers to a family of continuous probability distributions defined over the interval [0, 1] and parametrized by two positive shape parameters, denoted by alpha (a) and beta (b), that appear as exponents of the random variable x and control the shape of the distribution.
+ 
+f(x) = K * x^(a-1) *(1-x^(b - 1)) 
+
+In this example, set K = 2, a = 2, and b = 1 and restrict domain of x to [0,1]
+
+```{r}
+library(ggplot2)
+a <- 2
+b <- 1
+K <- 2
+x <- seq(from = 0, to = 1, by = 0.025)
+fx <- K * x^(a-1) * (1-x)^(b-1)
+lower_x <- seq(from = -0.25, to = 0, by = 0.025)  # add some values of x less than zero
+upper_x <- seq(from = 1, to = 1.25, by = 0.025)  # add some values of x greater than one
+lower_fx <- rep(0, 11)  # add fx=0 values to x<0
+upper_fx <- rep(0, 11)  # add fx=0 values to x>1
+x <- c(lower_x, x, upper_x)  # paste xs together
+fx <- c(lower_fx, fx, upper_fx)  # paste fxs together
+d <- as.data.frame(cbind(x, fx))
+p <- ggplot(data = d, aes(x = x, y = fx)) + xlab("x") + ylab("f(x)") + geom_line()
+p
+```
+
+Show the above is a PDF
+
+```{r}
+library(manipulate)
+manipulate(ggplot(data = d, aes(x = x, y = fx)) + xlab("x") + ylab("f(x)") +
+    geom_line() + geom_polygon(data = data.frame(xvals = c(0, n, n, 0), fxvals = c(0,
+    K * n^(a - 1) * (1 - n)^(b - 1), 0, 0)), aes(x = xvals, y = fxvals)) + ggtitle(paste("Area Under Function = ",
+    0.5 * n * K * n^(a - 1) * (1 - n)^(b - 1), sep = " ")), n = slider(0, 1,
+    initial = 0.5, step = 0.01))
+```
+
+The shaded area here represents the cumulative probability integrated across f(x) from −inf to x.
+
+The **cumulative distribution function**, or CDF, of a random variable is defined as the probability of observing a random variable X taking the value of x or less, i.e. F(x) = Pr(X is less than or equal to x)
+: This definition applies regardless of whether X is discrete or continuous. Note here we are using F(x) for the cumulative distribution function rather than f(x), which we use for the probability density function. For a continuous variable, the PDF is simply the first derivative of the CDF
+
+```{r}
+x <- seq(from = 0, to = 1, by = 0.005)
+prob <- 0.5 * x * K * x^(a - 1) * (1 - x)^(b - 1)
+barplot(prob, names.arg = x, space = 0, main = "Cumulative Probability", xlab = "x",ylab = "Pr(X ≤ x)")
+```
+
+The built in R function for the Beta Distribution, pbeta(), can give us the cumulative probability directly, if we specify the values of a = 2 and b = 1.
+ 
+```{r}
+pbeta(0.75, 2, 1)  # cumulative probability for x ≤ 0.75
+pbeta(0.5, 2, 1)  # cumulative probability for x ≤ 0.50
+```
+
+In general, we find the cumulative probability for a continuous random variable by calculating the area under the probability density function of interest from -inf to x. This is what is is being returned from pbeta(). The other related Beta Distribution functions, e.g., rbeta(), dbeta(), and qbeta(), are also useful. rbeta() draws random observations from a specfied beta distribution. dbeta() gives the point estimate of the beta density function at the value of the argument x, and qbeta() is essentially the converse of pbeta(), i.e., it tells you the value of x that is associated with a particular cumulative probability, or quantile, of the cumulative distribution function. Other PMFs and PDFs have comparable r, d, p, and q functions.
+
+```{r}
+pbeta(0.7, 2, 1)  # yields .49
+qbeta(0.49, 2, 1)  # yield 0.7
+```
+
+We can define the survival function for a random variable X as S(x) = P(X > x) = 1 - P (X <= X) = 1 - f(x)
+
+Finally, we can define the “qth”" quantile of a cumulative distibution function as the value of x at which the CDF has the value “q”, i.e., F(x at q) = q
+
+Expected Mean (u of x) and Variance (sigma^2 of x) of Random Variables
+
+```{r}
+m <- sum(seq(1:6) * 1/6)
+m
+
+var <- sum((seq(1:6) - mean(seq(1:6)))^2 * (1/6))
+var
+```
 
