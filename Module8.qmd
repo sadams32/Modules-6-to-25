@@ -566,8 +566,78 @@ sd(z)  # very close to 1
 
 # Sample Distributions versus Population Distributions
 
-It is important to recognize that, above, we were dealing with probability distributions of discrete and continuous random variables as they relate to populations. But, as we have talked about before, we almost never measure entire populations; instead, we measure samples from populations and we characterize our samples using various statistics. The theoretical probability distributions described above (and others) are models for how we connect observed sample data to populations, taking into account various assumptions, and this is what allows us to do many types of inferential statistics. The most fundamental assumption is that the observations we make are independent from one another and are identically distributed, an assumption often abbreviated as **iid**. Obvious cases of violation of this assumption are rife in the scientific literature, and we should always be cautious about making this assumption!
+**It is important to recognize that, above, we were dealing with probability distributions of discrete and continuous random variables as they relate to populations.** But, as we have talked about before, we almost never measure entire populations; instead, we measure samples from populations and we characterize our samples using various statistics. The theoretical probability distributions described above (and others) are models for how we connect observed sample data to populations, taking into account various assumptions, and this is what allows us to do many types of inferential statistics. The most fundamental assumption is that the observations we make are independent from one another and are identically distributed, an assumption often abbreviated as **iid**. Obvious cases of violation of this assumption are rife in the scientific literature, and we should always be cautious about making this assumption!
 
 The important thing for us to know is that we can get unbiased estimates of population level parameters on the basis of sample statistics.
 
+## Example
+
 Let’s imagine a population of 1 million zombies whose age at zombification is characterized by a normal distribution with a mean of 25 years and a standard deviation of 5 years. Below, we set up our population:
+
+```{r}
+set.seed(1)
+x <- rnorm(1e+06, 25, 5)
+hist(x, probability = TRUE)
+
+mu <- mean(x)
+mu
+
+sigma <- sqrt(sum((x - mean(x))^2)/length(x)) # Note: We don’t use the sd() function as this would divide by length(x)-1. Check that out using sd(x)
+```
+
+Suppose we now sample the zombie population by trapping sets of zombies and determining the mean age in each set. We sample without replacement from the original population for each set. Let’s do that 100 times with samples of size 5 and store these in a list.
+
+```{r}
+k <- 1000  # number of samples
+n <- 5  # size of each sample
+s <- NULL  # dummy variable to hold each sample
+for (i in 1:k) {
+    s[[i]] <- sample(x, size = n, replace = FALSE)
+}
+head(s)
+```
+
+For each of these samples, we can then calculate a mean age, which is a statistic describing each sample. That statistic itself is a random variable with a mean and distribution. This is the sampling distribution. How does the sampling distribution compare to the population distribution? The mean of the two is pretty close to the same! The sample mean - which is an average of the set of sample averages - is an unbiased estimator for the population mean.
+
+```{r}
+m <- NULL
+for (i in 1:k) {
+    m[i] <- mean(s[[i]])
+}
+mean(m)  # almost equal to...
+
+mu
+```
+Again, this is the mean of the sampling distribution, which is simply the average of the means of each sample. This value should be really close to the population mean.
+
+## Standard Error
+The variance in the sampling distribution, i.e., of all possible means of samples of size n from a population, is (sigma^2)/n. The square root of this variance is the standard deviation of the sampling distribution, also referred to as the standard error.
+
+```{r}
+pop_se <- sqrt(sigma^2/n)
+pop_se  # SE estimated from population standard deviation
+
+pop_se <- sigma/sqrt(n)
+pop_se  # SE estimated from population standard deviation
+```
+
+If the true population standard deviation is not known, the standard error can still be estimated from the standard deviation of any given sample. Thus, analogous to the formula we used when the true population standard deviation was known, the standard error calculated from a sample is simply the sample standard deviation / (square root of the sample size), or…
+
+```{r}
+stdev <- NULL
+for (i in 1:k) {
+    stdev[i] <- sd(s[[i]])
+}
+sem <- stdev/sqrt(n)  # a vector of SEs estimated from each sample 
+head(sem)
+
+mean(sem)  # which is almost equal to...
+
+pop_se
+```
+
+Thus, the standard error of the mean calculated from an individual sample can be used as an estimator for the standard deviation of the sampling distribution. This is extremely useful, since it means that, if our sample is large enough, we don’t have to repeatedly sample from the population to get an estimate of the sampling distribution directly using our data.
+
+Note that as our sample size increases, the standard error of the mean should decrease, as should the standard deviation in estimates of the population mean drawn from successive samples. This should be apparent intuitively… as each sample drawn from a population gets larger, the estimate of the mean value of those samples should vary less and less.
+
+Despite their similarities, the standard error of the mean calculated for a given sample and the standard deviation of that given sample tell us different things. The standard error of the mean is an estimate of how far a given sample mean is likely to be from the population mean; it is a measure of uncertainty. The standard deviation of a sample is a measure of the degree to which individuals values within a sample differ from the sample mean.
