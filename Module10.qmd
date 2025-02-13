@@ -1,0 +1,208 @@
+---
+title: "Module10"
+format: html
+editor: visual
+---
+
+# Testing Sample Means: One Sample Z and T Tests
+
+Let’s do an example where we try to evaluate whether the mean of a single set of observations is significantly different than expected under a null hypothesis… i.e., this is a ONE-SAMPLE test.
+
+Suppose we have a vector describing the adult weights of vervet monkeys trapped in South Africa during the 2016 trapping season. We have the sense they are heavier than vervets we trapped in previous years, which averaged 4.9 kilograms. The mean is 5.324 kilograms. Is the mean significantly greater than our expectation?
+
+```{r}
+library(curl)
+```
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/vervet-weights.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+```{r}
+mean(d$weight)
+```
+
+```{r}
+mu <- 4.9
+x <- d$weight
+m <- mean(x)
+s <- sd(x)
+n <- length(x)
+sem <- s/sqrt(n)
+```
+
+```{r}
+z <- (m - mu)/sem
+z
+```
+
+n this case, 𝑧
+ is a quantile… the estimated number of standard errors of the mean away from the population mean that our sample falls.
+
+If we then want to see if 𝑧
+ is significant, we need to calculate the probability of seeing a deviation from the mean as high or higher than this by chance. To do this, we can use the pnorm() function. Because we have converted our sample mean to the standard normal scale, the mean= and sd= arguments of pnorm() are the defaults of 0 and 1, respectively.
+
+We want the probability of seeing a 𝑧
+ this large or larger by chance.
+ 
+```{r}
+p <- 1 - pnorm(z)
+p
+```
+ 
+```{r}
+p <- pnorm(z, lower.tail = FALSE)
+p
+```
+
+
+However, as noted above, our sample size from a population is typically limited. So, instead of using the normal distribution to determine the p value of our statistic, we should use the t distribution, which, as we’ve seen, has slightly fatter tails. The statistic and process is exactly the same, though, as for the normal distribution.
+
+```{r}
+p <- 1 - pt(z, df = n - 1)
+p
+```
+
+```{r}
+p <- pt(z, df = n - 1, lower.tail = FALSE)
+p
+```
+
+R has built into it a single function, t.test(), that lets us do all this in one line. We give it our data and the expected population mean, 𝜇
+, along with the kind of test we want to do.
+
+```{r}
+t <- t.test(x = x, mu = mu, alternative = "greater")
+t
+```
+
+Note that we can also use the t.test() function to calculate CIs based on the t distribution for us easily!
+
+```{r}
+lower <- m - qt(1 - 0.05/2, df = n - 1) * sem
+upper <- m + qt(1 - 0.05/2, df = n - 1) * sem
+ci <- c(lower, upper)
+ci  # by hand
+```
+
+```{r}
+t <- t.test(x = x, mu = mu, alternative = "two.sided")
+ci <- t$conf.int
+ci  # using t test
+```
+
+So our conclusion, then, would be to reject the 𝐻0
+ that the weights of the sample of monkeys from the 2016 trapping season come from the same distribution as the weights of monkeys from previous trapping seasons based on the average, since the average from previous seasons falls outside the 95% confidence interval for the t distribution based on the sample average from the 2016 trapping season.
+
+In other words, the 2016 trapping season has vervet monkeys whose weights are significantly heavier than the average from previous trapping seasons (p < 0.01).
+
+## Challenge 1
+
+Adult lowland woolly monkeys are reported to have an average body weight of 7.2 kilograms. You are working with an isolated population of woolly monkeys from the Peruvian Andes that you think may be a different species from the lowland form, and you collect a sample of 15 weights from adult individuals at that site. From your sample, you calculate a mean of 6.43 kilograms and a standard deviation of 0.98 kilograms.
+
+Perform a hypothesis test of whether body weights in your population are different from the reported average for lowland woolly monkeys by setting up a “two-tailed” hypothesis, carrying out the analysis, and interpreting the p value (assume the significance level is 𝛼
+=0.05). Your sample is < 30, so you should use the t distribution and do a t test. Do your calculations both by hand and using the t.test() function and confirm that they match.
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall21/woolly-weights.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+```{r}
+x <- d$weight
+m <- mean(x)
+s <- sd(x)
+n <- length(x)
+sem <- s/sqrt(n)
+mu <- 7.2
+t <- (m - mu)/sem
+t
+```
+
+```{r}
+alpha <- 0.05
+crit <- qt(1 - alpha/2, df = n - 1)  # identify critical values
+test <- t < -crit || t > crit  # boolean test as to whether t is larger than the critical value at either tail
+test <- abs(t) > crit
+t.test(x = x, mu = mu, alternative = "two.sided")
+```
+
+
+# Comparing Sample Means: Two Sample Z and T Tests
+
+Sometimes we want to compare two groups of measurements to one another, which boils down to a hypothesis test for the difference between two means, 𝜇1
+ and 𝜇2
+. The null hypothesis is that the difference between the means is zero.
+
+Before getting to the appropriate test, there are a couple of things that we need to consider:
+
+[1] How, if at all, are the two samples related to one another? Sometimes we may have PAIRED samples (e.g., the same individuals before and after some treatment) and sometimes the samples are UNPAIRED or INDEPENDENT (e.g., weights for different samples of black-and-white colobus monkeys collected in the rainy versus dry seasons).
+
+[2] Are the variances in the two samples roughly equal or not? E.g., if we are comparing male and female heights, are the variances comparable?
+
+## Samples with Unequal Variances
+### Challenge 2
+Let’s do an example. Load in a file of black-and-white colobus weights and examine the str() of the file. Then, create 2 vectors, x and y, for male and female weights. Plot these in boxplots side by side and then calculate the mean, sd, and sample size for both males and females.
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/colobus-weights.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+```{r}
+x <- d$weight[d$sex == "male"]
+y <- d$weight[d$sex == "female"]
+par(mfrow = c(1, 2))
+boxplot(x, ylim = c(4.5, 8), main = "Weight (kg)", xlab = "Males")
+boxplot(y, ylim = c(4.5, 8), main = "Weight (kg)", xlab = "Females")
+```
+
+```{r}
+m1 <- mean(x)
+m2 <- mean(y)
+mu <- 0  # you could leave this out... the default argument value is 0
+s1 <- sd(x)
+s2 <- sd(y)
+n1 <- length(x)
+n2 <- length(y)
+```
+
+Now calculate the t statistic and test the two-tailed hypothesis that the sample means differ.
+
+```{r}
+t <- (m2 - m1 - mu)/sqrt(s2^2/n2 + s1^2/n1)
+t
+```
+
+```{r}
+alpha <- 0.05
+crit <- qt(1 - alpha/2, df = n - 1)  # identify critical values
+crit
+```
+
+```{r}
+test <- t < -crit || t > crit  # boolean test
+test <- abs(t) > crit
+test
+```
+
+Note that for this test, the number of degrees of freedom is calculated as:
+
+```{r}
+df <- (s2^2/n2 + s1^2/n1)^2/((s2^2/n2)^2/(n2 - 1) + (s1^2/n1)^2/(n1 - 1))
+df
+```
+Do the same using the t.test() function
+```{r}
+t <- t.test(x = x, y = y, mu = 0, alternative = "two.sided")
+t
+```
+
+## Samples with Equal Variances
+
+
+
