@@ -12,9 +12,9 @@ library(sciplot)
 
 # Challenge 1
 
-Given a vector, x <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25, 50, 100, 200, 1000), write a function to determine the geometric mean of the values in a vector. Remember the general form for functions is:
+Given a vector, x \<- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 25, 50, 100, 200, 1000), write a function to determine the geometric mean of the values in a vector. Remember the general form for functions is:
 
-function name <- function(arguments to pass){code to run}
+function name \<- function(arguments to pass){code to run}
 
 Geometric mean
 
@@ -27,6 +27,7 @@ gm1(x)
 ```
 
 ## OR
+
 ```{r}
 gm2 <- function(x) {
     exp(mean(log(x)))
@@ -50,6 +51,7 @@ ss1(x)
 ```
 
 ## OR
+
 ```{r}
 ss2 <- function(x) {
     sum(x^2) - length(x) * mean(x)^2
@@ -58,6 +60,7 @@ ss2(x)
 ```
 
 ## OR
+
 ```{r}
 ss3 <- function(x) {
     sum(x^2) - (sum(x))^2/length(x)
@@ -129,11 +132,9 @@ sample_sd <- function(x) {
 sample_sd(x)
 ```
 
-
 Using Measures of Spread
 
-Describing Uncertainty in Estimated Parameters
-We would also like to have an idea, based on characteristics of our sample, how reliable or unreliable our estimates of population parameters based on those samples are. In general, we would expect such a measure of uncertainty, or error, to increase with the variability in our sample (estimates with high variability are more uncertain) and to decrease as we sample more. That is, it should be proportional to the ratio of variance to sample size.
+Describing Uncertainty in Estimated Parameters We would also like to have an idea, based on characteristics of our sample, how reliable or unreliable our estimates of population parameters based on those samples are. In general, we would expect such a measure of uncertainty, or error, to increase with the variability in our sample (estimates with high variability are more uncertain) and to decrease as we sample more. That is, it should be proportional to the ratio of variance to sample size.
 
 Also, ideally, the units for our estimate of error should be the same as those of our original measurements. Since the ratio above would be expressed in square units (since sample size is dimensionless), we can take the square root to express it in units.
 
@@ -161,6 +162,7 @@ SE1(x)
 ```
 
 ## OR
+
 ```{r}
 SE2 <- function(x) {
     sqrt(var(x)/length(x))
@@ -175,17 +177,15 @@ library(sciplot)
 se(x)
 ```
 
-Calculating Confidence Intervals using Standard Errors
-Standard errors can be used to calculate the confidence intervals around an estimate. A confidence interval shows the likely range of values into which an estimate would fall if the sampling exercise were to be repeated. We can talk about different confidence intervals (e.g., 50%, 95%, 99%), and the higher the confidence we want to have, the wider the interval will be.
+Calculating Confidence Intervals using Standard Errors Standard errors can be used to calculate the confidence intervals around an estimate. A confidence interval shows the likely range of values into which an estimate would fall if the sampling exercise were to be repeated. We can talk about different confidence intervals (e.g., 50%, 95%, 99%), and the higher the confidence we want to have, the wider the interval will be.
 
 The 95% confidence interval, then, describes the range of values into which a statistic, calculated based on a repeated sample, would be expected to fall 95% of the time. We typically estimate confidence intervals with respect to specific theoretical distributions (e.g., normal, Poisson, Student’s t, F) and different characteristics about our sample (e.g., mean, standard deviation, degrees of freedom).
 
 For example, suppose we wanted to calculate a 95% confidence interval around our estimate of the mean for a particular set of observations, assuming those data reflect a random variable that is normally distributed and that our observations are independent. We would simply find the values corresponding to the numbers of standard errors away from the mean our statistic would be expected to fall 95% of the time.
 
-We can calculate this by multiplying our estimate of the standard error by the quantile normal (qnorm()) function. Basically, we give the qnorm() function a quantile, and it returns the value of 𝑋
- below which that proportion of the cumulative probability function falls. For example, qnorm(0.025, mean=0, sd=1) tells us the number of standard deviations away from the mean that correspond with up to 2.5% of of the normal distribution with mean=0 and sd=1. qnorm(0.975, mean=0, sd=1) tells us the number of standard deviations up to which 97.5% of observations should fall.
+We can calculate this by multiplying our estimate of the standard error by the quantile normal (qnorm()) function. Basically, we give the qnorm() function a quantile, and it returns the value of 𝑋 below which that proportion of the cumulative probability function falls. For example, qnorm(0.025, mean=0, sd=1) tells us the number of standard deviations away from the mean that correspond with up to 2.5% of of the normal distribution with mean=0 and sd=1. qnorm(0.975, mean=0, sd=1) tells us the number of standard deviations up to which 97.5% of observations should fall.
 
-Let’s take a quick look at the NORMAL DISTRIBUTION. Here, we use the rnorm() function to sample 10000 numbers from a normal distribution with mean = 0 and standard deviation = 1. [I am using set.seed() here so that each time I run this function, I return the same set of random numbers.]
+Let’s take a quick look at the NORMAL DISTRIBUTION. Here, we use the rnorm() function to sample 10000 numbers from a normal distribution with mean = 0 and standard deviation = 1. \[I am using set.seed() here so that each time I run this function, I return the same set of random numbers.\]
 
 ```{r}
 set.seed(1)
@@ -204,7 +204,7 @@ plot(x, dnorm(x), cex = 0.4)
 plot(x, pnorm(x), cex = 0.4)
 ```
 
-"The qnorm function in R is used to find the quantile of a normal distribution at a specific cumulative density. It is the inverse of the cumulative normal function, also known as pnorm" (Google AI overview explanation)    
+"The qnorm function in R is used to find the quantile of a normal distribution at a specific cumulative density. It is the inverse of the cumulative normal function, also known as pnorm" (Google AI overview explanation)
 
 ```{r}
 x <- seq(from = 0, to = 1, by = 0.01)
@@ -227,6 +227,7 @@ ci
 ```
 
 ## OR
+
 ```{r}
 upper <- m + qnorm(0.975, mean = 0, sd = 1) * e
 lower <- m + qnorm(0.025, mean = 0, sd = 1) * e  # or lower <- m - qnorm(0.975)*e
@@ -235,6 +236,7 @@ ci
 ```
 
 ## OR
+
 ```{r}
 normalCI = function(x, CIlevel = 0.95) {
     upper = m + qnorm(1 - (1 - CIlevel)/2) * sqrt(var(x)/length(x))
@@ -251,7 +253,7 @@ Based on the given data (with a particular mean, variance, and sample size) we a
 
 A repeated sample from the same distribution is expected to fall into this interval 95% of the time.
 
--
+-   
 
 Calculating Confidence Intervals by Bootstrapping
 
