@@ -204,5 +204,246 @@ t
 
 ## Samples with Equal Variances
 
+The degrees of freedom for this test is calculated as follows:
+```{r}
+s <- sqrt((((n1 - 1) * s1^2) + ((n2 - 1) * s2^2))/(n1 + n2 - 2))
+t <- (m2 - m1 - mu)/(sqrt(s^2 * (1/n1 + 1/n2)))
+t
+```
+
+```{r}
+df <- n1 + n2 - 2
+df
+```
+
+```{r}
+t <- t.test(x = x, y = y, mu = 0, var.equal = TRUE, alternative = "two.sided")
+t
+```
+A crude test for equality of variances is to divide the larger by the smaller and if the result is < 2, you can go ahead and used the pooled variance version of the test (which has many fewer degrees of freedom).
+
+In our case, we cannot, since the ratio of variances exceeds 2…
+```{r}
+var(x)/var(y)
+```
+
+We can use the var.test() function to conduct an actual statistical test on the ratio of variances, which compares the ratio test statistic we just calculated to an F distribution. The F distribution is often used to model ratios of random variables and thus is useful in regression applications and, as here, for testing whether variances from two samples are different. It is dependent upon the specification of a pair of degrees of freedom values supplied as the arguments df1= and df2= (or inferred from the number of observations in each sample).
+
+Below, the results of var.test() are saved to a variable. Calling the variable provides a brief descriptive summary.
+```{r}
+vt <- var.test(x, y)
+vt
+```
+
+## Paired Samples
+
+For a paired sample test, the null hypothesis is that the mean of individual paired differences between the two samples (e.g., before and after) is zero.
+
+### Challenge 3
+Let’s play with a sample… IQs of individuals taking a certain statistics course before and after a lecture on significance testing. Load in the iqs.csv data file, look at it, plot a barchart of values before and after and construct a paired t test to evaluate the means before and after.
+
+```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/iqs.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+```
+
+```{r}
+x <- d$IQ.before - d$IQ.after
+m <- mean(x)
+mu <- 0  # can leave this out
+s <- sd(x)
+n <- length(x)
+sem <- s/sqrt(n)
+par(mfrow = c(1, 2))
+boxplot(d$IQ.before, ylim = c(115, 145), main = "IQ", xlab = "Before")
+boxplot(d$IQ.after, ylim = c(115, 145), main = "IQ", xlab = "After")
+```
+
+```{r}
+t <- (m - mu)/sem
+t
+```
+
+```{r}
+alpha <- 0.05
+crit <- qt(1 - alpha/2, df = n - 1)  # identify critical values
+crit
+```
+
+```{r}
+test <- t < -crit || t > crit  # boolean test
+test
+```
+
+```{r}
+t.test(x, df = n - 1, alternative = "two.sided")
+```
+
+# Testing Sample Proportions: One Sample Z Test
+
+As we have seen, the sampling distribution of sample means for independent and identically distributed random variables is roughly normal (and, as shown by the CLT, this distribution increasingly approaches normal as sample size increases). Similarly, the sampling distribution for another kind of sample statistic, the number of “successes” x out of a series of k trials is also roughly normally distributed. If the true population proportion of “successes” is 𝜋, then the sampling distribution for the proportion of successes in a sample of size n is expected to be roughly normally distributed with mean = 𝜋and standard error = sqrt(𝜋(1−𝜋)/𝑛).
+
+Let’s set up a simulation to show this…
+
+First we create a population of 500 “1”s and 500 “0”s, i.e., where 𝜋 = 0.5
+
+```{r}
+pop <- c(rep(0, 500), rep(1, 500))
+```
+
+Now, we will take 1000 random samples of size n=10 from that population and calculate the proportion of “1”s in each sample…
+```{r}
+pi <- 0.5
+x <- NULL
+n <- 10
+for (i in 1:1000) {
+    x[i] <- mean(sample(pop, size = n, replace = FALSE))  # taking the mean of a bunch of 0s and 1s yields the proportion of 1s!
+}
+m <- mean(x)
+m
+```
+
+```{r}
+s <- sd(x)
+s
+```
+
+```{r}
+pop_se <- sqrt(pi * (1 - pi)/n)
+pop_se  # the se is an estimate of the sd of the sampling distribution
+```
+
+The same is true if we create a population of 800 “1”s and 200 “0”s, i.e., where 𝜋 = 0.8…
+```{r}
+pop <- c(rep(0, 800), rep(1, 200))
+pi <- 0.8
+x <- NULL
+n <- 10
+for (i in 1:1000) {
+    x[i] <- mean(sample(pop, size = n, replace = FALSE))  # taking the mean of a bunch of 0s and 1s yields the proportion of 1s!
+}
+m <- mean(x)
+m
+```
+
+```{r}
+s <- sd(x)
+s
+```
+
+```{r}
+pop_se <- sqrt(pi * (1 - pi)/n)
+pop_se  # the se is an estimate of the sd of the sampling distribution
+```
+
+z = (observed statistic - expected statistic) / standard error (see equation in notes)
+
+### Challenge 4
+
+A neotropical ornithologist working in the western Amazon deploys 30 mist nets in a 100 hectare (ha) grid. She monitors the nets on one morning and records whether or not she captures any birds in the net (i.e., a “success” or “failure” for every net during a netting session). The following vector summarizes her netting results:
+```{r}
+v <- c(0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1)
+```
+
+Her netting success over the previous three seasons suggests that she should catch birds in 80% of her nets. This season, she feels, her success rate is lower than in previous years. Does her trapping data support this hypothesis?
+
+What is 𝐻0?
+What is 𝐻A?
+Are both n×𝜋and 𝑛×(1−𝜋) > 5?
+Calculate z and the p value associated with z
+Calculate the 95% CI around p-hat
+
+```{r}
+phat <- mean(v)
+phat
+```
+
+```{r}
+pi <- 0.8
+n <- 30
+z <- (phat - pi)/sqrt(pi * (1 - pi)/30)
+z
+```
+
+```{r}
+p <- pnorm(z, lower.tail = TRUE)
+p
+```
+
+We use the lower.tail=TRUE argument because we’re testing a lower-tailed one-tailed hypothesis. The 95% confidence interval can be estimated, based on the normal distribution, as follows:
+```{r}
+lower <- phat - qnorm(0.975) * sqrt(phat * (1 - phat)/30)
+upper <- phat + qnorm(0.975) * sqrt(phat * (1 - phat)/30)
+ci <- c(lower, upper)
+ci
+```
 
 
+This approach using quantiles of the standard normal distribution is but one method of calculating CIs for proportion data, and is the CI referred to as a Wald confidence interval. Note that the CI does not include the value of 𝜋… rather, 𝜋 > is greater than the upper bound of the CI, suggesting that the observed success rate is indeed lower than in previous years.
+
+We can do the same test with a one-liner in R…
+```{r}
+pt <- prop.test(x = sum(v), n = length(v), p = 0.8, conf.level = 0.95, correct = FALSE,
+    alternative = "less")
+pt
+```
+
+Note that the CI is different than we calculated based on the normal distribution… prop.test() implements a slightly different procedure for estimating the CI rather than basing this on the normal distribution and the CLT.
+
+# Comparing Sample Proportions: Two Sample Z Tests
+
+### Challenge 5
+
+A biologist studying two species of tropical bats captures females of both species in a mist net over the course of week of nightly netting. For each species, the researcher records whether females are lactating or not. The two vectors below summarize the data for each species.
+```{r}
+v1 <- c(1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0)
+v2 <- c(1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1)
+```
+
+Based on your mist netting data, do the species differ significantly in the proportion of lactating females during this trapping season? What are 𝐻0 and 𝐻A?
+
+```{r}
+pstar <- (sum(v1) + sum(v2))/(length(v1) + length(v2))
+pstar
+```
+
+```{r}
+phat1 <- mean(v1)
+phat1
+```
+
+```{r}
+phat2 <- mean(v2)
+phat2
+```
+
+```{r}
+pi <- 0
+z <- (phat2 - phat1)/sqrt((pstar * (1 - pstar)) * (1/length(v1) + 1/length(v2)))
+z
+```
+
+```{r}
+p <- 1 - pnorm(z, lower.tail = TRUE) + pnorm(z, lower.tail = FALSE)
+p
+```
+
+```{r}
+crit <- qnorm(1 - alpha/2)  # identify critical values
+crit
+```
+
+```{r}
+test <- p < -crit || p > crit  # boolean test
+test
+```
+
+We can use the prop.test() function to do this in one line.
+```{r}
+pt <- prop.test(x = c(sum(v2), sum(v1)), n = c(length(v2), length(v1)), alternative = "two.sided",
+    correct = FALSE)
+pt
+```
+
+See notes for summary of Z and T Tests
