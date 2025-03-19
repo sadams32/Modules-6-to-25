@@ -10,6 +10,7 @@ So far, we have looked principally at single variables, but one of the main thin
 
 ```{r}
 library(curl)
+library(tidyverse)
 ```
 
 ```{r}
@@ -42,6 +43,7 @@ cov(w, h)
 ### Challenge 2
 
 Calculate the correlation between zombie survivor height and weight.
+
 ```{r}
 sd_w <- sd(w)
 sd_h <- sd(h)
@@ -50,6 +52,7 @@ cor_wh
 ```
 
 Again, there is a built-in R function cor() which yields the same.
+
 ```{r}
 cor(w, h)
 ```
@@ -108,7 +111,8 @@ manipulate(plot(1:5, cex = size), size = slider(0.5, 10, step = 0.5))  #priming 
 manipulate(slope.test(beta1), beta1 = slider(-1, 1, initial = 0, step = 0.005))  #here we go!
 ```
 
-Similarly, analytically… [see equation 20.3 in The Book of R]
+Similarly, analytically… \[see equation 20.3 in The Book of R\]
+
 ```{r}
 beta1 <- cor(w, h) * (sd(h)/sd(w))
 beta1
@@ -124,7 +128,8 @@ beta1 <- sum((h - mean(h)) * (w - mean(w)))/sum((w - mean(w))^2)
 beta1
 ```
 
-To find 𝛽0, we can simply plug back into our original regression model. The line of best fit has to run through the centroid of our data points, which is the point determined by the mean of the x values and the mean of the y values, so we can use the following [see swebsite], which, rearranged to solve for 𝛽0 gives…
+To find 𝛽0, we can simply plug back into our original regression model. The line of best fit has to run through the centroid of our data points, which is the point determined by the mean of the x values and the mean of the y values, so we can use the following \[see swebsite\], which, rearranged to solve for 𝛽0 gives…
+
 ```{r}
 beta0 <- mean(h) - beta1 * mean(w)
 beta0
@@ -152,6 +157,7 @@ head(m$model)
 ```
 
 In {ggplot}, we can easily create a plot that adds the linear model along with confidence intervals around the estimated value of y, or y-hat at each x. Those intervals are important for when we move on to talking about inference in the regression context.
+
 ```{r}
 g <- ggplot(data = d, aes(x = weight, y = height))
 g <- g + geom_point()
@@ -188,6 +194,7 @@ plot(mII, "MA")
 ```
 
 Note that, here, running lmodel2() and using OLS to detemine the best coefficients yields equivalent results to our Model I regression done above using lm().
+
 ```{r}
 mI <- lm(height ~ weight, data = d)
 summary(mI)
@@ -210,10 +217,13 @@ Derive by hand the ordinary least squares regression coefficients 𝛽1 and 𝛽
 
 Confirm that you get the same results using the lm() function
 
-Repeat the analysis above for males and females separately (our non-binary sample may be too small, but you can try that, too, if you’re interested).
-Do your regression coefficients differ? How might you determine this?
+Repeat the analysis above for males and females separately (our non-binary sample may be too small, but you can try that, too, if you’re interested). Do your regression coefficients differ? How might you determine this?
 
 ```{r}
+f <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/refs/heads/master/AN588_Spring25/zombies.csv")
+d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
+head(d)
+
 plot(data = d, height ~ age)
 ```
 
@@ -235,20 +245,28 @@ beta0
 m <- lm(height ~ age, data = d)
 m
 ```
+## By gender
+```{r}
+d <- d %>% filter(gender == "Female")
+plot(data = d, height ~ female)
+```
+
 
 ## Statistical Inference in Regression
 
 Once we have our linear model and associated regression coefficients, we want to know a bit more about it. First, we want to be able to evaluate whether there is statistical evidence that there is indeed a relationship between these variables. If so, then our regression coefficients can indeed allow us to estimate or predict the value of one variable given another. Additionally, we also would like to be able to extend our estimates from our sample out to the population they are drawn from. These next steps involve the process of statistical inference.
 
-The output of the lm() function provides a lot of information useful for inference. Run the command summary() on the output of lm(data=d,height~weight)
+The output of the lm() function provides a lot of information useful for inference. Run the command summary() on the output of lm(data=d,height\~weight)
 
 ```{r}
 m <- lm(data = d, height ~ weight)
 summary(m)
 ```
-One of the outputs for the model, seen in the 2nd to last line in the output above, is the “R-squared” value, or the coefficient of determination, which is a summary of the total amount of variation in the y variable that is explained by the x variable. In our regression, ~69% of the variation in zombie height is explained by zombie weight.
+
+One of the outputs for the model, seen in the 2nd to last line in the output above, is the “R-squared” value, or the coefficient of determination, which is a summary of the total amount of variation in the y variable that is explained by the x variable. In our regression, \~69% of the variation in zombie height is explained by zombie weight.
 
 Another output is the standard error of the estimate of each regression coefficient, along with a corresponding t value and p value. Recall that t statistics are calculated as the difference between an observed and expected value divided by a standard error. The p value comes from evaluating the magnitude of the t statistic against a t distribution with n-2 degrees of freedom. We can confirm this by hand calculating t and p based on the estimate and the standard error of the estimate.
+
 ```{r}
 t <- coef(summary(m))
 t <- data.frame(unlist(t))
@@ -263,6 +281,7 @@ t
 ```
 
 We can get confidence intervals for our estimates easily, too, using either the approach we’ve used before by hand or by using a built in function.
+
 ```{r}
 t$lower <- t$Est - qt(0.975, df = 998) * t$SE
 t$upper <- t$Est + qt(0.975, df = 998) * t$SE
@@ -279,9 +298,7 @@ ci
 
 Estimating our regression coefficients is pretty straightforward… but what do they mean?
 
-The intercept, 𝛽0 , is the PREDICTED value of y when the value of x is zero.
-The slope, 𝛽1 is EXPECTED CHANGE in units of y for every 1 unit of change in x.
-The overall equation allows us to calculate PREDICTED values of y for new observations of x. We can also calculate CONFIDENCE INTERVALS (CIs) around the predicted mean value of y for each value of x (which addresses our uncertainly in the estimate of the mean), and we can also get PREDICTION INTERVALS (PIs) around our prediction (which gives the range of actual values of y we might expect to see at a given value of x).
+The intercept, 𝛽0 , is the PREDICTED value of y when the value of x is zero. The slope, 𝛽1 is EXPECTED CHANGE in units of y for every 1 unit of change in x. The overall equation allows us to calculate PREDICTED values of y for new observations of x. We can also calculate CONFIDENCE INTERVALS (CIs) around the predicted mean value of y for each value of x (which addresses our uncertainly in the estimate of the mean), and we can also get PREDICTION INTERVALS (PIs) around our prediction (which gives the range of actual values of y we might expect to see at a given value of x).
 
 ### CHALLENGE 4
 
@@ -318,9 +335,11 @@ g <- g + geom_point(aes(x = x, y = y), colour = "red")
 g <- g + geom_segment(aes(x = x, y = yhat, xend = x, yend = y))
 g
 ```
+
 Each vertical line in the figure above represents a residual, the difference between the observed and the fitted or predicted value of y at the given x values.
 
 The predict() function also allows us to easily generate confidence intervals around our predicted mean value for y values easily.
+
 ```{r}
 ci <- predict(m, newdata = data.frame(weight = 150), interval = "confidence",
     level = 0.95)  # for a single value
@@ -349,6 +368,7 @@ g
 ```
 
 The same predict() function also allows us to easily generate prediction intervals for values of y at each x.
+
 ```{r}
 pi <- predict(m, newdata = data.frame(weight = 150), interval = "prediction",
     level = 0.95)  # for a single value
@@ -376,7 +396,7 @@ g
 
 ### Challenge 5
 
-Construct a linear model for the regression of zombie survivor height on age and predict the mean height, the 95% confidence interval (CI) around the predicted mean height, and the 95% prediction interval (PI) around that mean for a vector of zombie survivor ages, v <- seq(from=10, to=30, by=1). Then, plot your points, your regression line, and lines for the lower and upper limits of the CI and of the PI.
+Construct a linear model for the regression of zombie survivor height on age and predict the mean height, the 95% confidence interval (CI) around the predicted mean height, and the 95% prediction interval (PI) around that mean for a vector of zombie survivor ages, v \<- seq(from=10, to=30, by=1). Then, plot your points, your regression line, and lines for the lower and upper limits of the CI and of the PI.
 
 ```{r}
 v <- seq(from = 10, to = 30, by = 1)
@@ -416,4 +436,5 @@ g2 <- g2 + geom_point(alpha = 1/2)
 g2 <- g2 + geom_smooth(method = "lm", formula = y ~ x)
 grid.arrange(g1, g2, ncol = 2)
 ```
+
 Again, here the CI band shows where the mean height is expected to fall in 95% of samples and the PI band shows where the individual points are expected to fall 95% of the time.
