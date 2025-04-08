@@ -278,3 +278,11 @@ r.squaredGLMM(null)
 # Generalized Linear Mixed Modeling (GLMM)
 
 Just as we extended our standard linear modeling approach to include non normally distributed response variables/error structures, so too can we extend our mixed effects modeling to such situations. This is referred to as generalized linear mixed modeling, or GLMM. There are several R packages we can use to do this (e.g., {MCMCglmm}, {lme4} using the glmer() call). The methods for generating maximum likelihood parameter estimates under GLMMs are more complicated, but conceptually, the process is a simple extension of what we have talked about already.
+
+
+# Class Notes
+Holding the indivudal ID as a random effect removes variability like ex. if Carly studied harder for one test than she did for others, this would allow us to control for those little things that can't be controlled -> we are accounting for variation that correpsonds to taking multiple measurements (because she took the three different tests at different times and each test is one account). Fixed effects are all the things we want to study -> treat soemthing as a random variable if it doesn't matter who the individual is (treat the individual as a random effect) -> pulling out all the variation that is due to the random factors, we don't care about those but we have to account for it. Fixed effects are what we care about -> want to control for the "carly-ness" of the dataset - controls for non-dependence you get from takin multiple results from one indviudal/subject
+
+When you see that indivudals have fundamentally different baselines, should suggest you want to do mixed effects modeling
+
+Don't really get p-values with mixed models - have to think about the models instead
