@@ -1,0 +1,116 @@
+---
+title: "Module 20"
+format: html
+editor: visual
+---
+
+```{r}
+library(readxl)
+
+github_url <- "https://raw.githubusercontent.com/imcarlyy/survival_analysis/main/Csurv.xlsx"
+temp_file <- tempfile(fileext = ".xlsx")  # Create a temporary file
+download.file(github_url, temp_file, mode = "wb")  # 'wb' for binary (Excel files)
+Csurv <- read_excel(temp_file)  # Read the downloaded file
+unlink(temp_file)  # Delete the temporary file
+```
+
+```{r}
+names(Csurv)
+```
+
+```{r}
+attach(Csurv) #Since, the dataset is small (n=12) we can take a look at it entirely here:
+Csurv
+```
+It is very important to know while working with survival analysis datasets what the 0 and 1 stands for.
+
+In this example we are considering Death: 1=event has occurred (death) and 0=no event (they are censored; meaning they have left the study and hence we do not know whether they have data on them at the given point of time).
+
+So, in this dataset if we look at first column, the 1st individual died at 2 months from the start of the study (Time=2, Death=1), the 2nd individual was censored at 3 months (Time=3, Death=0), the 3rd individual died at 6 months (Time=6, Death=1) and so on.
+
+Now we will look into the Kaplan-Meier to fit into this dataset.
+
+In order to do this, we need to load the survival library into R. Now, the survival library is already built into base R, so we do not need to install this package, but we do need to load the package to use these survival commands.
+
+```{r}
+library(survival)
+```
+
+Now in order the fit the K-M model, we will use this survfit command and so I am going to fit a survival analysis, store it in an object called km.model:
+
+```{r}
+km.model<-survfit(Surv(Time, Death)~1, type="kaplan-meier")
+```
+Here, I am going to let R know the type is kaplan-meier (if we do not specify the type it will fit the kaplan-meier by default so it wouldn’t have been an issue)
+
+Now the way we specify the survival time or the y variable is using a capital S; so it’s Surv (survival) and then in parentheses we need to give it both the time the individual was followed for as well the indicator of whether the event occured (they died) or if they were censored {Surv(Time, Death) tilde 1} and the reason we have one here is that for this dataset we don’t actually have any x variables. This is the way we let R know that we are just estimating survival without using any particular X variables.
+
+Now that the model has been fit, we can ask a few summaries…
+
+```{r}
+km.model #Summary of the K-M model
+```
+The output we are getting here is the total number of individuals is 12, number of events is 10 (10 deaths and 2 censored observations), median survival time so, in this case half the people survived beyond 15 months, half did not. We have also returned a 95% confidence interval for the median which means that we are 95% confident that median survival is somewhere between 7 months and infinity. This dataset is very small so here we do not have a upper limit for confidence interval around the median survival.
+
+We can also ask for the summary of the model:
+
+```{r}
+summary(km.model)
+```
+Here we can see that at time 2, there were 12 individuals at risk, 1 death occurred, the probability of surviving beyond 2 months is 91.7%. We also have a standard error associated with that survival (0.0798) as well as a 95% CI (ie. we are 95% confident that beyond 2 months the patients survival chances are between 77.3% upto a 100%). Similary, at time 6, there are 10 individuals at risk, 2 individuals died and so the probabilty of surviving beyond 6 months is 73.3%. Again, the standard error at 6 months is 0.1324 and we are 95% confident that there’s somewhere between 51.5 upto 100% chance of surviving 6 months. Now these are extremely wide confidence intervals because the sample size is so small. This dataset is useful for introducing the idea of Kaplan-Meier survival model but for a real study, we would have a same size of much greater than 12.
+
+Now we can ask R to make a plot of this model. To do that we can ask R to plot the K-M model. So R will plot the Kaplan-Meier model that was fit saying confidence interval=F (or False). It tells R to not put a confidence interval around the survival function. xlab and ylab are giving the plot x-axis and y-axis labels and the main is the title.
+
+```{r}
+plot(km.model, conf.int=F, xlab="Time (months)",ylab="%Alive = S(t)", main="K-M Model")
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
